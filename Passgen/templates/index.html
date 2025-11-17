@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator</title>
+    <style>
+        :root {
+            /* Apple's Core Design Colors */
+            --apple-blue: #007aff;
+            --apple-blue-hover: #0070e0;
+            --apple-green: #34c759;
+            --apple-light-gray-1: #f5f5f7;
+            --apple-light-gray-2: #e5e5ea;
+            --apple-text-primary: #1d1d1f;
+            --apple-text-secondary: #8a8a8e;
+            --apple-glass-bg: rgba(255, 255, 255, 0.75);
+            --apple-glass-border: rgba(255, 255, 255, 1);
+            --apple-shadow: rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            /* 1. Typography: Use Apple's system font stack */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+            
+            /* 2. Background: Subtle animated blobs, like a macOS wallpaper */
+            background-color: var(--apple-light-gray-1);
+        }
+        
+        /* Background Blobs (More subtle and professional) */
+        .blob {
+            position: absolute;
+            z-index: -1;
+            border-radius: 50%;
+            filter: blur(100px); /* Very soft blur */
+            opacity: 0.6;
+            animation: move 25s infinite alternate ease-in-out;
+        }
+        .blob-1 { background: #ffadad; width: 400px; height: 400px; top: 10%; left: 10%; }
+        .blob-2 { background: #ffd6a5; width: 300px; height: 300px; bottom: 10%; right: 20%; animation-delay: 5s; }
+        .blob-3 { background: #caffbf; width: 350px; height: 350px; top: 20%; right: 30%; animation-delay: 10s; }
+
+        @keyframes move {
+            0%   { transform: translate(0, 0) scale(1); }
+            50%  { transform: translate(100px, -50px) scale(1.2); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        .container {
+            width: 400px;
+            padding: 40px;
+            
+            /* 3. Material: Refined, high-blur glassmorphism */
+            background: var(--apple-glass-bg);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            
+            border: 1px solid var(--apple-glass-border);
+            border-radius: 24px; /* Generous, squircle-like radius */
+            box-shadow: 0 16px 48px var(--apple-shadow);
+            
+            box-sizing: border-box;
+            text-align: center;
+            transform: scale(0.98);
+            opacity: 0;
+            animation: fadeIn 0.5s 0.1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        h1 {
+            color: var(--apple-text-primary);
+            font-size: 2.25rem; /* 36px */
+            font-weight: 700;
+            margin: 0 0 24px 0;
+        }
+        
+        /* --- Password Display --- */
+        .password-display-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+
+        #passwordDisplay {
+            width: 100%;
+            font-size: 1.25rem; /* 20px */
+            padding: 16px;
+            padding-right: 80px; /* Space for the "Copy" button */
+            border: none;
+            border-radius: 12px;
+            text-align: left;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            background: var(--apple-light-gray-1); /* Light gray input field */
+            color: var(--apple-text-primary);
+            box-sizing: border-box;
+            border: 1px solid var(--apple-light-gray-2);
+        }
+        #passwordDisplay::placeholder {
+            color: var(--apple-text-secondary);
+        }
+        #passwordDisplay:focus {
+            outline: none;
+            border-color: var(--apple-blue);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+        }
+
+        #copyBtn {
+            /* 4. Minimalist Control: "In-field" button, like iOS */
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            
+            background: none;
+            border: none;
+            color: var(--apple-blue);
+            font-size: 0.9rem; /* 14px */
+            font-weight: 600;
+            padding: 4px 0;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        #copyBtn:hover {
+            color: var(--apple-blue-hover);
+        }
+        #copyBtn.copied {
+            color: var(--apple-green); /* Feedback color */
+        }
+
+        /* --- Length Slider --- */
+        .length-slider {
+            width: 100%;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .length-slider label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem; /* 15px */
+            font-weight: 500;
+            color: var(--apple-text-primary);
+            margin-bottom: 16px;
+        }
+
+        #lengthValue {
+            font-weight: 600;
+            color: var(--apple-text-secondary);
+        }
+
+        #lengthSlider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: var(--apple-light-gray-2);
+            outline: none;
+            border-radius: 3px;
+        }
+        
+        /* 5. Custom Control: Apple-style slider thumb */
+        #lengthSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            margin-top: -8px; /* Center thumb on track */
+            transition: transform 0.2s ease;
+        }
+        #lengthSlider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        /* --- Generate Button (The Main CTA) --- */
+        #generateBtn {
+            font-size: 1.05rem; /* 17px */
+            font-weight: 600;
+            padding: 16px 24px;
+            cursor: pointer;
+            background-color: var(--apple-blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+        }
+
+        #generateBtn:hover {
+            background-color: var(--apple-blue-hover);
+            transform: scale(1.02);
+        }
+        #generateBtn:active {
+            transform: scale(0.99);
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="container">
+        <h1>Password Generator</h1>
+
+        <div class="password-display-container">
+            <input type="text" id="passwordDisplay" readonly placeholder="Your new password...">
+            <button id="copyBtn">Copy</button>
+        </div>
+
+        <div class="length-slider">
+            <label for="lengthSlider">
+                <span>Password Length</span>
+                <span id="lengthValue">12</span>
+            </label>
+            <input type="range" id="lengthSlider" min="8" max="32" value="12">
+        </div>
+
+        <button id="generateBtn">Generate Password</button>
+    </div>
+
+    <script>
+        // --- Get All Elements ---
+        const generateBtn = document.getElementById('generateBtn');
+        const passwordDisplay = document.getElementById('passwordDisplay');
+        const copyBtn = document.getElementById('copyBtn');
+        const lengthSlider = document.getElementById('lengthSlider');
+        const lengthValue = document.getElementById('lengthValue');
+
+        // --- Event Listeners ---
+
+        // Update the length display span when the slider moves
+        lengthSlider.oninput = function() {
+            lengthValue.innerHTML = this.value;
+        }
+
+        // Generate Button Click
+        generateBtn.addEventListener('click', generatePassword);
+
+        // Also generate a password on load
+        window.addEventListener('load', generatePassword);
+
+        // Copy Button Click
+        copyBtn.addEventListener('click', function() {
+            const password = passwordDisplay.value;
+            if (password) {
+                navigator.clipboard.writeText(password).then(() => {
+                    // Give visual feedback
+                    copyBtn.innerText = 'Copied!';
+                    copyBtn.classList.add('copied');
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        copyBtn.innerText = 'Copy';
+                        copyBtn.classList.remove('copied');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+            }
+        });
+
+        // --- Main Function ---
+        function generatePassword() {
+            const length = lengthSlider.value;
+            
+            // Reset copy button state on new generation
+            copyBtn.innerText = 'Copy';
+            copyBtn.classList.remove('copied');
+            
+            // Fetch the password from our Flask server
+            fetch(`/generate_password?length=${length}`)
+                .then(response => response.json())
+                .then(data => {
+                    passwordDisplay.value = data.password;
+                })
+                .catch(error => {
+                    console.error('Error fetching password:', error);
+                    passwordDisplay.value = 'Error!';
+                });
+        }
+    </script>
+</body>
+</html>
